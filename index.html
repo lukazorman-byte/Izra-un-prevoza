@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="sl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#E3AE12">
+<title>Kalkulator prevoza</title>
+<style>
+:root{--bg:#F2F3EF;--surface:#fff;--ink:#1E2830;--muted:#5E6A70;--line:#DADDD6;--accent:#E3AE12;--accent-ink:#1E2830;--soft:#F7F2DF;--good:#2F7D4F;--bad:#B4462F}
+@media(prefers-color-scheme:dark){:root{--bg:#13181C;--surface:#1C2328;--ink:#E9ECE6;--muted:#9AA5AA;--line:#2E373D;--accent:#F0BE2E;--accent-ink:#13181C;--soft:#2A2718;--good:#6FC291;--bad:#E48A74}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Barlow,system-ui,sans-serif;padding:max(24px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(48px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.wrap{max-width:980px;margin:auto;display:grid;gap:20px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:4px solid var(--accent);padding-bottom:12px}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:38px;height:38px;flex-shrink:0;color:var(--accent)}
+h1{font:700 clamp(30px,6vw,44px)/1 "Barlow Condensed",Barlow,sans-serif;letter-spacing:.01em;margin:0;text-transform:uppercase;text-wrap:balance}
+.sub{color:var(--muted);margin:6px 0 0}
+.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;min-width:0}
+h2{font:700 20px/1.1 "Barlow Condensed",Barlow,sans-serif;text-transform:uppercase;letter-spacing:.04em;margin:0 0 14px}
+.fields{display:grid;gap:14px}
+.row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.row label,.field-label{font-weight:500}
+.row small{display:block;color:var(--muted);font-size:12.5px;font-weight:400}
+input[type=number],input[type=text]{font:600 16px Barlow,sans-serif;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);min-height:44px}
+input[type=number]{width:130px;text-align:right;font-variant-numeric:tabular-nums}
+input:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{font:600 13px Barlow,sans-serif;letter-spacing:.06em;padding:8px 14px;min-height:42px;border:0;background:var(--bg);color:var(--muted);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
+.chip{font:600 12px Barlow,sans-serif;text-transform:uppercase;letter-spacing:.06em;padding:5px 10px;border-radius:99px;background:var(--soft);color:var(--ink);border:1px solid var(--line)}
+.cats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.cats button{font:600 14px Barlow,sans-serif;min-height:44px;padding:8px 16px;border:1px solid var(--line);border-radius:99px;background:var(--bg);color:var(--ink);cursor:pointer}
+.cats button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.receipt{position:sticky;top:16px}
+.lines{display:grid;margin:0;padding:0;list-style:none;font-variant-numeric:tabular-nums}
+.lines li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line)}
+.lines li span:first-child{color:var(--muted)}.lines li span:last-child{white-space:nowrap}
+.lines .plus{color:var(--bad)}.lines .minus{color:var(--good)}
+.total{margin-top:16px;background:var(--ink);color:var(--bg);border-radius:8px;padding:16px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.total b{font:700 38px/1 "Barlow Condensed",Barlow,sans-serif;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;max-width:100%}
+.total span{text-transform:uppercase;letter-spacing:.08em;font-size:12.5px;font-weight:600}
+.note{color:var(--muted);font-size:13px;margin:10px 0 0}
+details.panel summary{cursor:pointer;font:700 20px/1.1 "Barlow Condensed",Barlow,sans-serif;text-transform:uppercase;letter-spacing:.04em}
+.catbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;align-items:center}
+.catbar input[type=text]{flex:1 1 180px;min-width:0}
+.btn{font:600 13px Barlow,sans-serif;min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);cursor:pointer}
+.btn.danger{color:var(--bad)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.settings{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px 24px;margin-top:16px}
+.settings .row input{width:100px}
+.saved{color:var(--good);font-size:13px;font-weight:600;min-height:20px;margin:10px 0 0}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.receipt{position:static}}
+@media(max-width:360px){.panel{padding:16px}input[type=number]{width:104px}.settings{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header><div><div class="brand"><svg class="logo" viewBox="0 0 40 40" fill="none" aria-label="Prevoz" role="img"><path d="M3 9h22v20H3zM25 17h7l5 7v5H25M8 17h11M8 22h7" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><circle cx="10" cy="30" r="4" fill="var(--bg)" stroke="currentColor" stroke-width="2.5"/><circle cx="30" cy="30" r="4" fill="var(--bg)" stroke="currentColor" stroke-width="2.5"/></svg><h1>Kalkulator prevoza</h1></div><p class="sub">Vsaka kategorija ima svoje tarife, ki se shranijo v tej napravi</p></div><span class="chip" id="tipChip">Normalna relacija</span></header>
+<div class="grid">
+<section class="panel" aria-labelledby="h-vnos"><h2 id="h-vnos">Podatki o furi</h2>
+<div class="cats" id="cats" role="group" aria-label="Kategorija prevoza"></div>
+<div class="fields">
+<div class="row"><label for="km">Število kilometrov<small>Skupni kilometri</small></label><input id="km" type="number" min="0" step="1" value="150"></div>
+<div class="row"><div class="field-label" id="label-interv">Interventna vožnja<small id="hint-interv"></small></div><div class="seg" data-key="interv" role="group" aria-labelledby="label-interv"></div></div>
+<div class="row"><div class="field-label" id="label-vikend">Vikend / praznik<small id="hint-vikend"></small></div><div class="seg" data-key="vikend" role="group" aria-labelledby="label-vikend"></div></div>
+<div class="row"><div class="field-label" id="label-special">Specialni prevoz<small id="hint-special"></small></div><div class="seg" data-key="special" role="group" aria-labelledby="label-special"></div></div>
+<div class="row"><div class="field-label" id="label-prijatelj">Prijatelj / kolega<small id="hint-prijatelj"></small></div><div class="seg" data-key="prijatelj" role="group" aria-labelledby="label-prijatelj"></div></div>
+<div class="row"><label for="cak">Čakanje, nakladanje (ure)<small id="hint-cak"></small></label><input id="cak" type="number" min="0" step="0.5" value="0"></div>
+<div class="row"><label for="del">Dodatni delavci (število)<small id="hint-del"></small></label><input id="del" type="number" min="0" step="1" value="0"></div>
+<div class="row"><label for="cest">Cestnine in tuneli (€)<small>Vpiši znesek</small></label><input id="cest" type="number" min="0" step="0.01" value="15"></div>
+</div></section>
+<aside class="panel receipt" aria-labelledby="h-izr" aria-live="polite"><h2 id="h-izr">Izračun</h2><p class="note" style="margin:-6px 0 10px">Kategorija: <b id="catName"></b></p><ul class="lines" id="lines"></ul><div class="total"><span>Skupaj za plačilo</span><b id="total">0,00 €</b></div><p class="note" id="minNote" hidden>Vožnja je pod minimalno ceno fure, zato se obračuna minimum.</p><p class="note">Dodatki in popusti se obračunajo zaporedno. Čakanje, delavci in cestnine se prištejejo po upoštevanju minimalne cene.</p></aside>
+</div>
+<details class="panel"><summary>Kategorije in tarife</summary>
+<div class="catbar">
+<input type="text" id="catRename" aria-label="Ime kategorije" maxlength="40">
+<button class="btn" id="btnAdd" type="button">+ Nova kategorija</button>
+<button class="btn" id="btnDup" type="button">Podvoji</button>
+<button class="btn danger" id="btnDel" type="button">Izbriši</button>
+</div>
+<div class="settings" id="settings"></div>
+<button class="btn" id="reset" type="button" style="margin-top:14px">Ponastavi tarife kategorije</button>
+<p class="saved" id="saved" role="status"></p>
+<p class="note">Spremembe se samodejno shranijo v brskalnik te naprave. Če počistiš podatke brskalnika, se tarife ponastavijo.</p>
+</details>
+<noscript><section class="panel">Za izračun odpri datoteko v brskalniku z omogočenim JavaScriptom.</section></noscript>
+</main>
+<script>
+const DEFAULTS={
+osnovna:{l:"Osnovna cena / km (€)",v:.65,step:.01},
+amAvto:{l:"Amortizacija avto / km (€)",v:.20,step:.01},
+amPrik:{l:"Amortizacija prikolica / km (€)",v:.15,step:.01},
+vikendP:{l:"Dodatek vikend / praznik (%)",v:20,step:1},
+intervP:{l:"Dodatek interventno (%)",v:40,step:1},
+specialP:{l:"Dodatek specialni prevoz (%)",v:30,step:1},
+kratkaP:{l:"Dodatek krajša fura, pod 25 km (%)",v:20,step:1},
+dolgaP:{l:"Popust daljša fura, nad 250 km (%)",v:-10,step:1},
+prijateljP:{l:"Popust prijatelji (%)",v:-20,step:1},
+minimum:{l:"Minimalna cena fure (€)",v:25,step:1},
+delavec:{l:"Dodatni delavec (€ na delavca)",v:10,step:1},
+cakanje:{l:"Čakanje, naklad / uro (€)",v:10,step:1}};
+const KEY="kalkulator-prevoza-kategorije-v1";
+const defaultTariffs=()=>Object.fromEntries(Object.entries(DEFAULTS).map(([k,d])=>[k,d.v]));
+const newId=()=>"c"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+let state;
+function load(){
+ try{
+ const s=JSON.parse(localStorage.getItem(KEY));
+ if(s&&Array.isArray(s.cats)&&s.cats.length){
+ s.cats.forEach(c=>{c.t=Object.assign(defaultTariffs(),c.t)});
+ if(!s.cats.some(c=>c.id===s.active))s.active=s.cats[0].id;
+ return s;
+ }
+ }catch(e){}
+ const cats=["Standardni prevoz","Selitve","Specialni prevozi"].map(name=>({id:newId(),name,t:defaultTariffs()}));
+ return {cats,active:cats[0].id};
+}
+let saveTimer;
+function save(){
+ try{localStorage.setItem(KEY,JSON.stringify(state));$("saved").textContent="Shranjeno ✓";}
+ catch(e){$("saved").textContent="Shranjevanje ni mogoče (brskalnik blokira shrambo)."}
+ clearTimeout(saveTimer);saveTimer=setTimeout(()=>{$("saved").textContent=""},2000);
+}
+const $=id=>document.getElementById(id);
+const cur=()=>state.cats.find(c=>c.id===state.active);
+const eur=n=>n.toLocaleString("sl-SI",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
+const num=id=>{const n=parseFloat($(id).value);return Number.isFinite(n)?Math.max(0,n):0};
+const pct=n=>(n>0?"+":"")+n.toLocaleString("sl-SI")+" %";
+const flags={interv:false,vikend:false,special:false,prijatelj:false};
+document.querySelectorAll(".seg").forEach(seg=>{
+ const key=seg.dataset.key;
+ ["NE","DA"].forEach(txt=>{
+ const b=document.createElement("button");b.type="button";b.textContent=txt;
+ b.setAttribute("aria-pressed",String((txt==="DA")===flags[key]));
+ b.onclick=()=>{flags[key]=txt==="DA";seg.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));calc()};seg.appendChild(b);
+ });
+});
+function renderCats(){
+ $("cats").replaceChildren(...state.cats.map(c=>{
+ const b=document.createElement("button");b.type="button";b.textContent=c.name;
+ b.setAttribute("aria-pressed",String(c.id===state.active));
+ b.onclick=()=>{state.active=c.id;save();renderAll()};return b;
+ }));
+ $("catRename").value=cur().name;
+ $("btnDel").disabled=state.cats.length<2;
+}
+function renderSettings(){
+ const t=cur().t;
+ $("settings").replaceChildren();
+ for(const [k,d] of Object.entries(DEFAULTS)){
+ const r=document.createElement("div");r.className="row";
+ const discount=k==="dolgaP"||k==="prijateljP";
+ r.innerHTML=`<label for="t-${k}">${d.l}</label><input id="t-${k}" type="number" min="${discount?-100:0}" ${discount?'max="0"':""} step="${d.step}" value="${t[k]}">`;
+ r.querySelector("input").oninput=e=>{const value=parseFloat(e.target.value);if(!Number.isFinite(value)||!e.target.checkValidity())return;cur().t[k]=value;save();calc()};
+ $("settings").appendChild(r);
+ }
+}
+function renderAll(){renderCats();renderSettings();calc()}
+$("catRename").oninput=e=>{const n=e.target.value.trim();if(!n)return;cur().name=n;save();
+ const b=[...$("cats").children][state.cats.indexOf(cur())];if(b)b.textContent=n;$("catName").textContent=n};
+$("btnAdd").onclick=()=>{const n=prompt("Ime nove kategorije:");if(!n||!n.trim())return;
+ const c={id:newId(),name:n.trim().slice(0,40),t:defaultTariffs()};state.cats.push(c);state.active=c.id;save();renderAll()};
+$("btnDup").onclick=()=>{const c={id:newId(),name:(cur().name+" (kopija)").slice(0,40),t:{...cur().t}};state.cats.push(c);state.active=c.id;save();renderAll()};
+$("btnDel").onclick=()=>{if(state.cats.length<2||!confirm("Izbrišem kategorijo »"+cur().name+"« in njene tarife?"))return;
+ state.cats=state.cats.filter(c=>c.id!==state.active);state.active=state.cats[0].id;save();renderAll()};
+$("reset").onclick=()=>{cur().t=defaultTariffs();save();renderSettings();calc()};
+function calc(){
+ const T=cur().t;
+ $("catName").textContent=cur().name;
+ const km=num("km"),cak=num("cak"),del=Math.floor(num("del")),cest=num("cest");
+ const tip=km<25?"Krajša":km>250?"Daljša":"Normalna";
+ $("tipChip").textContent=tip+" relacija";
+ $("hint-interv").textContent=pct(T.intervP);$("hint-vikend").textContent=pct(T.vikendP);
+ $("hint-special").textContent="Težek ali izreden, "+pct(T.specialP);
+ $("hint-prijatelj").textContent="Kolegialna cena, "+pct(T.prijateljP);
+ $("hint-cak").textContent=eur(T.cakanje)+" na uro";$("hint-del").textContent=eur(T.delavec)+" na delavca";
+ const perKm=T.osnovna+T.amAvto+T.amPrik;
+ let v=km*perKm;
+ const lines=[[`Kilometri: ${km.toLocaleString("sl-SI")} km × ${eur(perKm)}`,v,""]];
+ const mods=[[flags.interv,"Interventno",T.intervP],[flags.vikend,"Vikend / praznik",T.vikendP],[flags.special,"Specialni prevoz",T.specialP],[tip==="Krajša","Krajša fura",T.kratkaP],[tip==="Daljša","Daljša fura",T.dolgaP],[flags.prijatelj,"Prijatelj / kolega",T.prijateljP]];
+ for(const [on,name,p] of mods){if(!on||!p)continue;const nv=v*(1+p/100);lines.push([`${name} (${pct(p)})`,nv-v,p>0?"plus":"minus"]);v=nv}
+ const underMin=v<T.minimum;
+ if(underMin){lines.push(["Dvig na minimalno ceno",T.minimum-v,"plus"]);v=T.minimum}
+ if(cak)lines.push([`Čakanje: ${cak.toLocaleString("sl-SI")} h × ${eur(T.cakanje)}`,cak*T.cakanje,""]);
+ if(del)lines.push([`Dodatni delavci: ${del} × ${eur(T.delavec)}`,del*T.delavec,""]);
+ if(cest)lines.push(["Cestnine in tuneli",cest,""]);
+ $("lines").innerHTML=lines.map(([l,a,c])=>`<li><span>${l}</span><span class="${c}">${a>0&&c?"+":""}${eur(a)}</span></li>`).join("");
+ $("total").textContent=eur(v+cak*T.cakanje+del*T.delavec+cest);$("minNote").hidden=!underMin;
+}
+["km","cak","del","cest"].forEach(id=>$(id).addEventListener("input",calc));
+state=load();renderAll();
+</script>
+</body>
+</html>
